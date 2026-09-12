@@ -527,10 +527,10 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // 1. Supabase 접속 정보 입력 (Project Settings -> API 메뉴에서 확인)
+    // Supabase 접속 파라미터 연동 (변수명 충돌 방지를 위해 supabaseClient 사용)
     const SUPABASE_URL = "https://rflccnybpimhgguwinpz.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmbGNjbnlicGltaGdndXdpbnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMzMzMTksImV4cCI6MjEwNDgwOTMxOX0.2oKyodI65QqSMpJyXpcUlDqxF8JEIVsjjN6eUYD5Xcc";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const investmentInput = document.getElementById("investment");
     const rateInput = document.getElementById("rate");
@@ -553,7 +553,7 @@
     const toast = document.getElementById("toast");
 
     let game = {
-      id: null, // Supabase 데이터의 레코드 ID
+      id: null,
       investment: 5000,
       rate: 10,
       rounds: 100,
@@ -651,10 +651,9 @@
       return { investment, rate, rounds };
     }
 
-    /* Supabase 비동기 데이터 로딩 및 동기화 함수 */
     async function loadGameFromSupabase() {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('user_game_progress')
           .select('*')
           .order('updated_at', { ascending: false })
@@ -675,19 +674,17 @@
           roundsInput.value = game.rounds;
 
           recalculateValues();
-          showToast("저장된 게임 데이터를 불러왔습니다.");
+          showToast("저장된 데이터를 불러왔습니다.");
         } else {
           buildGame();
         }
       } catch (err) {
-        console.error("Data load failed:", err);
+        console.error("Data load error:", err);
         buildGame();
       }
     }
 
     async function saveProgressToSupabase() {
-      if (SUPABASE_URL === "https://rflccnybpimhgguwinpz.supabase.co") return;
-
       const payload = {
         investment: game.investment,
         rate: game.rate,
@@ -698,13 +695,13 @@
 
       try {
         if (game.id) {
-          await supabase.from('user_game_progress').update(payload).eq('id', game.id);
+          await supabaseClient.from('user_game_progress').update(payload).eq('id', game.id);
         } else {
-          const { data } = await supabase.from('user_game_progress').insert([payload]).select();
+          const { data } = await supabaseClient.from('user_game_progress').insert([payload]).select();
           if (data && data.length > 0) game.id = data[0].id;
         }
       } catch (err) {
-        console.error("Data save failed:", err);
+        console.error("Data save error:", err);
       }
     }
 
@@ -865,7 +862,7 @@
       });
     });
 
-    // 앱 실행 시 Supabase 데이터 조회
+    // 시작 시 DB 데이터 조회
     loadGameFromSupabase();
   </script>
 </body>
