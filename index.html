@@ -1015,14 +1015,13 @@
 
   <script>
     // --- Supabase 설정 ---
-    const SUPABASE_URL = "https://rflccnybpimhgguwinpz.supabase.co"; // Supabase 프로젝트 URL
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmbGNjbnlicGltaGdndXdpbnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMzMzMTksImV4cCI6MjEwNDgwOTMxOX0.2oKyodI65QqSMpJyXpcUlDqxF8JEIVsjjN6eUYD5Xcc
-"; // Supabase Anon API Key
-    
-    let supabase = null;
-    if (SUPABASE_URL !== "https://rflccnybpimhgguwinpz.supabase.co" && typeof window.supabase !== "undefined") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
+const SUPABASE_URL = "https://rflccnybpimhgguwinpz.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmbGNjbnlicGltaGdndXdpbnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMzMzMTksImV4cCI6MjEwNDgwOTMxOX0.2oKyodI65QqSMpJyXpcUlDqxF8JEIVsjjN6eUYD5Xcc";
+
+let supabase = null;
+if (SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && typeof window.supabase !== "undefined") {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
     const investmentInput = document.getElementById("investment");
     const rateInput = document.getElementById("rate");
