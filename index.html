@@ -2,14 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
   />
-
   <meta name="theme-color" content="#090712" />
-
   <meta
     name="description"
     content="성공과 실패로 진행하는 EXP 투자 시뮬레이션 게임"
@@ -21,6 +18,9 @@
     type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%237126ff'/%3E%3Cstop offset='.55' stop-color='%23ff009d'/%3E%3Cstop offset='1' stop-color='%2300d9ff'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23080612'/%3E%3Crect x='4' y='4' width='56' height='56' rx='15' fill='url(%23g)' filter='url(%23b)' opacity='.9'/%3E%3Crect x='8' y='8' width='48' height='48' rx='13' fill='url(%23g)'/%3E%3Ctext x='32' y='38' text-anchor='middle' font-family='Arial' font-size='18' font-weight='900' fill='white'%3EeXP%3C/text%3E%3C/svg%3E"
   />
+
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <title>EXP Stock Game</title>
 
@@ -57,8 +57,10 @@
       font-family:
         Inter,
         Pretendard,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
         "Noto Sans KR",
-        Arial,
         sans-serif;
       background:
         radial-gradient(
@@ -77,6 +79,7 @@
           transparent 35%
         ),
         var(--bg);
+      user-select: none;
     }
 
     button,
@@ -312,9 +315,6 @@
       z-index: 1;
     }
 
-    /*
-      기존보다 크게 확대한 Progress Investment
-    */
     .eyebrow {
       margin-bottom: 18px;
       color: #f0caff;
@@ -379,8 +379,8 @@
       color: white;
       text-align: left;
       transition:
-        transform 0.2s,
-        filter 0.2s;
+        transform 0.15s,
+        filter 0.15s;
     }
 
     .action-btn:hover {
@@ -443,7 +443,7 @@
 
     .progress-head {
       display: flex;
-      align-items: end;
+      align-items: flex-end;
       justify-content: space-between;
       gap: 15px;
       margin-bottom: 14px;
@@ -482,11 +482,6 @@
     }
 
     .list-card {
-      /*
-        리스트 카드 내부에 충분한 공간을 확보합니다.
-        기존 가장자리 잘림 현상을 줄이기 위해
-        좌우/상하 여백과 리스트 패딩을 함께 조정했습니다.
-      */
       padding: 24px;
     }
 
@@ -519,6 +514,7 @@
       max-height: 680px;
       overflow-y: auto;
       padding: 5px 6px 8px;
+      scroll-behavior: smooth;
     }
 
     .round-list::-webkit-scrollbar {
@@ -654,8 +650,9 @@
       background: rgba(20, 10, 40, 0.9);
       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
       transform: translate(-50%, 130px);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       backdrop-filter: blur(15px);
+      pointer-events: none;
     }
 
     .toast.show {
@@ -863,7 +860,6 @@
             </div>
 
             <div class="hero-stats">
-              <!-- 전체 회차 완료 기준 -->
               <div class="stat">
                 <span class="stat-label">
                   시작금액
@@ -920,7 +916,6 @@
                 </strong>
               </div>
 
-              <!-- 현재 진행 기준 -->
               <div class="stat">
                 <span class="stat-label">
                   현재 진행 금액
@@ -1019,64 +1014,37 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const investmentInput =
-      document.getElementById("investment");
+    // --- Supabase 설정 ---
+    const SUPABASE_URL = "https://rflccnybpimhgguwinpz.supabase.co"; // Supabase 프로젝트 URL
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmbGNjbnlicGltaGdndXdpbnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMzMzMTksImV4cCI6MjEwNDgwOTMxOX0.2oKyodI65QqSMpJyXpcUlDqxF8JEIVsjjN6eUYD5Xcc"; // Supabase Anon API Key
+    
+    let supabase = null;
+    if (SUPABASE_URL !== "https://rflccnybpimhgguwinpz.supabase.co" && typeof window.supabase !== "undefined") {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
 
-    const rateInput =
-      document.getElementById("rate");
-
-    const roundsInput =
-      document.getElementById("rounds");
-
-    const startButton =
-      document.getElementById("startButton");
-
-    const successButton =
-      document.getElementById("successButton");
-
-    const failureButton =
-      document.getElementById("failureButton");
-
-    const roundList =
-      document.getElementById("roundList");
-
-    const progressBar =
-      document.getElementById("progressBar");
-
-    const progressText =
-      document.getElementById("progressText");
-
-    const currentStatus =
-      document.getElementById("currentStatus");
-
-    const listDescription =
-      document.getElementById("listDescription");
-
-    const heroInvestment =
-      document.getElementById("heroInvestment");
-
-    const heroReachedAmount =
-      document.getElementById("heroReachedAmount");
-
-    const heroRounds =
-      document.getElementById("heroRounds");
-
-    const heroRate =
-      document.getElementById("heroRate");
-
-    const heroTotalRate =
-      document.getElementById("heroTotalRate");
-
-    const heroCurrentAmount =
-      document.getElementById("heroCurrentAmount");
-
-    const heroCurrentRate =
-      document.getElementById("heroCurrentRate");
-
-    const toast =
-      document.getElementById("toast");
+    const investmentInput = document.getElementById("investment");
+    const rateInput = document.getElementById("rate");
+    const roundsInput = document.getElementById("rounds");
+    const startButton = document.getElementById("startButton");
+    const successButton = document.getElementById("successButton");
+    const failureButton = document.getElementById("failureButton");
+    const roundList = document.getElementById("roundList");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const currentStatus = document.getElementById("currentStatus");
+    const listDescription = document.getElementById("listDescription");
+    const heroInvestment = document.getElementById("heroInvestment");
+    const heroReachedAmount = document.getElementById("heroReachedAmount");
+    const heroRounds = document.getElementById("heroRounds");
+    const heroRate = document.getElementById("heroRate");
+    const heroTotalRate = document.getElementById("heroTotalRate");
+    const heroCurrentAmount = document.getElementById("heroCurrentAmount");
+    const heroCurrentRate = document.getElementById("heroCurrentRate");
+    const toast = document.getElementById("toast");
 
     let game = {
+      sessionId: null,
       investment: 5000,
       rate: 10,
       rounds: 100,
@@ -1088,232 +1056,176 @@
 
     function getAudioContext() {
       if (!audioContext) {
-        const AudioContext =
-          window.AudioContext ||
-          window.webkitAudioContext;
-
-        if (!AudioContext) {
-          return null;
-        }
-
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return null;
         audioContext = new AudioContext();
       }
-
       if (audioContext.state === "suspended") {
         audioContext.resume();
       }
-
       return audioContext;
     }
 
-    function playTone({
-      frequency,
-      endFrequency,
-      duration,
-      type,
-      volume
-    }) {
-      const context =
-        getAudioContext();
+    function playTone({ frequency, endFrequency, duration, type, volume }) {
+      try {
+        const context = getAudioContext();
+        if (!context) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const now = context.currentTime;
 
-      if (!context) {
-        return;
-      }
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(endFrequency, 1), now + duration);
 
-      const oscillator =
-        context.createOscillator();
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-      const gain =
-        context.createGain();
+        oscillator.connect(gain);
+        gain.connect(context.destination);
 
-      const now =
-        context.currentTime;
-
-      oscillator.type = type;
-
-      oscillator.frequency.setValueAtTime(
-        frequency,
-        now
-      );
-
-      oscillator.frequency.exponentialRampToValueAtTime(
-        Math.max(endFrequency, 1),
-        now + duration
-      );
-
-      gain.gain.setValueAtTime(
-        0.0001,
-        now
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        volume,
-        now + 0.015
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        now + duration
-      );
-
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-
-      oscillator.start(now);
-      oscillator.stop(now + duration + 0.03);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      } catch (e) {}
     }
 
     function playSuccessSound() {
-      playTone({
-        frequency: 520,
-        endFrequency: 960,
-        duration: 0.16,
-        type: "sine",
-        volume: 0.085
-      });
-
+      playTone({ frequency: 520, endFrequency: 960, duration: 0.16, type: "sine", volume: 0.085 });
       setTimeout(() => {
-        playTone({
-          frequency: 760,
-          endFrequency: 1280,
-          duration: 0.19,
-          type: "sine",
-          volume: 0.065
-        });
+        playTone({ frequency: 760, endFrequency: 1280, duration: 0.19, type: "sine", volume: 0.065 });
       }, 70);
     }
 
     function playFailureSound() {
-      playTone({
-        frequency: 300,
-        endFrequency: 170,
-        duration: 0.22,
-        type: "triangle",
-        volume: 0.09
-      });
-
+      playTone({ frequency: 300, endFrequency: 170, duration: 0.22, type: "triangle", volume: 0.09 });
       setTimeout(() => {
-        playTone({
-          frequency: 190,
-          endFrequency: 105,
-          duration: 0.18,
-          type: "sine",
-          volume: 0.055
-        });
+        playTone({ frequency: 190, endFrequency: 105, duration: 0.18, type: "sine", volume: 0.055 });
       }, 70);
     }
 
+    function formatKoreanUnits(val) {
+      const units = ['', '만', '억', '조', '경', '해'];
+      let unitIdx = 0;
+      let num = val;
+      while (num >= 10000 && unitIdx < units.length - 1) {
+        num /= 10000;
+        unitIdx++;
+      }
+      return num.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + units[unitIdx];
+    }
+
     function formatMoney(value) {
-      if (!Number.isFinite(value)) {
-        return "계산 불가";
-      }
-
-      if (value >= 1e15) {
-        return "₩" + value.toExponential(2);
-      }
-
-      return (
-        "₩" +
-        Math.round(value).toLocaleString("ko-KR")
-      );
+      if (!Number.isFinite(value)) return "계산 불가";
+      if (value >= 1e16) return "₩" + value.toExponential(2);
+      if (value >= 1e8) return "₩" + formatKoreanUnits(value);
+      return "₩" + Math.round(value).toLocaleString("ko-KR");
     }
 
     function formatPercent(value) {
-      if (!Number.isFinite(value)) {
-        return "계산 불가";
-      }
-
-      if (Math.abs(value) >= 1e12) {
-        return value.toExponential(2) + "%";
-      }
-
-      return (
-        value.toLocaleString("ko-KR", {
-          maximumFractionDigits: 2
-        }) + "%"
-      );
+      if (!Number.isFinite(value)) return "계산 불가";
+      if (Math.abs(value) >= 1e12) return value.toExponential(2) + "%";
+      return value.toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + "%";
     }
 
     function showToast(message) {
       toast.textContent = message;
       toast.classList.add("show");
-
       clearTimeout(showToast.timer);
-
       showToast.timer = setTimeout(() => {
         toast.classList.remove("show");
       }, 2200);
     }
 
     function validateInputs() {
-      let investment =
-        Number(investmentInput.value);
+      let investment = Number(investmentInput.value);
+      let rate = Number(rateInput.value);
+      let rounds = Number(roundsInput.value);
 
-      let rate =
-        Number(rateInput.value);
+      if (!Number.isFinite(investment)) investment = 5000;
+      if (!Number.isFinite(rate)) rate = 10;
+      if (!Number.isFinite(rounds)) rounds = 100;
 
-      let rounds =
-        Number(roundsInput.value);
-
-      if (!Number.isFinite(investment)) {
-        investment = 5000;
-      }
-
-      if (!Number.isFinite(rate)) {
-        rate = 10;
-      }
-
-      if (!Number.isFinite(rounds)) {
-        rounds = 100;
-      }
-
-      investment = Math.min(
-        Math.max(investment, 5000),
-        100000000
-      );
-
-      rate = Math.min(
-        Math.max(rate, 1),
-        300
-      );
-
-      rounds = Math.min(
-        Math.max(Math.floor(rounds), 1),
-        1000
-      );
+      investment = Math.min(Math.max(investment, 5000), 100000000);
+      rate = Math.min(Math.max(rate, 1), 300);
+      rounds = Math.min(Math.max(Math.floor(rounds), 1), 1000);
 
       investmentInput.value = investment;
       rateInput.value = rate;
       roundsInput.value = rounds;
 
-      return {
-        investment,
-        rate,
-        rounds
-      };
+      return { investment, rate, rounds };
     }
 
-    function buildGame() {
-      const settings =
-        validateInputs();
+    // --- Supabase DB 저장/업데이트 함수 ---
+    async function saveSessionToSupabase() {
+      if (!supabase) return;
 
-      game = {
-        ...settings,
-        current: 0,
-        values: []
+      const payload = {
+        investment: game.investment,
+        rate: game.rate,
+        rounds: game.rounds,
+        current_round: game.current
       };
 
-      let amount =
-        settings.investment;
+      try {
+        if (!game.sessionId) {
+          const { data, error } = await supabase.from('game_sessions').insert([payload]).select();
+          if (data && data.length > 0) {
+            game.sessionId = data[0].id;
+            localStorage.setItem("exp_game_session_id", game.sessionId);
+          }
+        } else {
+          await supabase.from('game_sessions').update(payload).eq('id', game.sessionId);
+        }
+      } catch (err) {
+        console.error("Supabase 저장 실패:", err);
+      }
+    }
 
-      const multiplier =
-        1 + settings.rate / 100;
+    // --- Supabase DB 로드 함수 ---
+    async function loadSessionFromSupabase() {
+      const localId = localStorage.getItem("exp_game_session_id");
+      if (!supabase || !localId) return false;
 
-      for (
-        let index = 1;
-        index <= settings.rounds;
-        index++
-      ) {
+      try {
+        const { data, error } = await supabase.from('game_sessions').select('*').eq('id', localId).single();
+        if (data && !error) {
+          game.sessionId = data.id;
+          game.investment = Number(data.investment);
+          game.rate = Number(data.rate);
+          game.rounds = Number(data.rounds);
+          game.current = Number(data.current_round);
+
+          investmentInput.value = game.investment;
+          rateInput.value = game.rate;
+          roundsInput.value = game.rounds;
+          return true;
+        }
+      } catch (err) {
+        console.error("Supabase 로드 실패:", err);
+      }
+      return false;
+    }
+
+    async function buildGame(isNew = true) {
+      if (isNew) {
+        const settings = validateInputs();
+        game = {
+          sessionId: null,
+          ...settings,
+          current: 0,
+          values: []
+        };
+        localStorage.removeItem("exp_game_session_id");
+      } else {
+        game.values = [];
+      }
+
+      let amount = game.investment;
+      const multiplier = 1 + game.rate / 100;
+
+      for (let index = 1; index <= game.rounds; index++) {
         amount *= multiplier;
         game.values.push(amount);
       }
@@ -1322,271 +1234,178 @@
       renderList();
       updateProgress();
 
-      showToast(
-        "새로운 시뮬레이션이 시작되었습니다."
-      );
+      if (isNew) {
+        showToast("새로운 시뮬레이션이 시작되었습니다.");
+        saveSessionToSupabase();
+      }
     }
 
     function getCurrentAmount() {
-      if (game.current <= 0) {
-        return game.investment;
-      }
-
+      if (game.current <= 0) return game.investment;
       return game.values[game.current - 1];
     }
 
     function getCurrentTotalRate() {
-      const currentAmount =
-        getCurrentAmount();
-
-      return (
-        (currentAmount / game.investment - 1) *
-        100
-      );
+      return ((getCurrentAmount() / game.investment - 1) * 100);
     }
 
     function getCompletedAmount() {
-      if (game.values.length === 0) {
-        return game.investment;
-      }
-
+      if (game.values.length === 0) return game.investment;
       return game.values[game.values.length - 1];
     }
 
     function getCompletedTotalRate() {
-      const completedAmount =
-        getCompletedAmount();
-
-      return (
-        (completedAmount / game.investment - 1) *
-        100
-      );
+      return ((getCompletedAmount() / game.investment - 1) * 100);
     }
 
     function updateHeader() {
-      const currentAmount =
-        getCurrentAmount();
-
-      const currentRate =
-        getCurrentTotalRate();
-
-      const completedAmount =
-        getCompletedAmount();
-
-      const completedRate =
-        getCompletedTotalRate();
-
-      heroInvestment.textContent =
-        formatMoney(game.investment);
-
-      /*
-        전체 회차를 모두 완료했을 때의 값
-      */
-      heroReachedAmount.textContent =
-        formatMoney(completedAmount);
-
-      heroTotalRate.textContent =
-        formatPercent(completedRate);
-
-      heroRounds.textContent =
-        `${game.current} / ${game.rounds}회`;
-
-      heroRate.textContent =
-        `${game.rate}%`;
-
-      /*
-        현재 진행 상황에 따라 변하는 값
-      */
-      heroCurrentAmount.textContent =
-        formatMoney(currentAmount);
-
-      heroCurrentRate.textContent =
-        formatPercent(currentRate);
-
-      listDescription.textContent =
-        `현재 ${game.current}회까지 성공`;
+      heroInvestment.textContent = formatMoney(game.investment);
+      heroReachedAmount.textContent = formatMoney(getCompletedAmount());
+      heroTotalRate.textContent = formatPercent(getCompletedTotalRate());
+      heroRounds.textContent = `${game.current} / ${game.rounds}회`;
+      heroRate.textContent = `${game.rate}%`;
+      heroCurrentAmount.textContent = formatMoney(getCurrentAmount());
+      heroCurrentRate.textContent = formatPercent(getCurrentTotalRate());
+      listDescription.textContent = `현재 ${game.current}회까지 성공`;
     }
 
     function renderList() {
       roundList.innerHTML = "";
-
       if (!game.values.length) {
-        roundList.innerHTML = `
-          <div class="empty">
-            시뮬레이션을 시작하면
-            회차별 리스트가 표시됩니다.
-          </div>
-        `;
-
+        roundList.innerHTML = `<div class="empty">시뮬레이션을 시작하면 회차별 리스트가 표시됩니다.</div>`;
         return;
       }
 
-      const fragment =
-        document.createDocumentFragment();
+      const fragment = document.createDocumentFragment();
 
       game.values.forEach((value, index) => {
-        const round =
-          index + 1;
+        const round = index + 1;
+        const totalRate = (value / game.investment - 1) * 100;
+        const item = document.createElement("article");
+        item.className = "round-item";
+        item.dataset.round = round;
 
-        const totalRate =
-          (value / game.investment - 1) *
-          100;
-
-        const item =
-          document.createElement("article");
-
-        item.className =
-          "round-item";
-
-        if (round <= game.current) {
-          item.classList.add("reached");
-        }
-
-        if (round === game.current) {
-          item.classList.add("current");
-        }
+        if (round <= game.current) item.classList.add("reached");
+        if (round === game.current) item.classList.add("current");
 
         item.innerHTML = `
           <div class="round-top">
             <span>${round}회차</span>
-
-            <em>
-              ${
-                round <= game.current
-                  ? "SUCCESS"
-                  : "LOCKED"
-              }
-            </em>
+            <em class="status-badge">${round <= game.current ? "SUCCESS" : "LOCKED"}</em>
           </div>
-
-          <div class="round-value">
-            ${formatMoney(value)}
-          </div>
-
+          <div class="round-value">${formatMoney(value)}</div>
           <div class="round-profit">
             회차 수익률 +${game.rate}%<br />
             누적 수익률 +${formatPercent(totalRate)}
           </div>
         `;
-
         fragment.appendChild(item);
       });
 
       roundList.appendChild(fragment);
+      scrollToCurrentItem();
+    }
 
-      const currentElement =
-        roundList.querySelector(
-          ".round-item.current"
-        );
+    function updateListState(prevRound, newRound) {
+      const items = roundList.querySelectorAll(".round-item");
+      items.forEach((item) => {
+        const round = parseInt(item.dataset.round, 10);
+        const badge = item.querySelector(".status-badge");
 
+        if (round <= newRound) {
+          item.classList.add("reached");
+          if (badge) badge.textContent = "SUCCESS";
+        } else {
+          item.classList.remove("reached");
+          if (badge) badge.textContent = "LOCKED";
+        }
+
+        if (round === newRound) item.classList.add("current");
+        else item.classList.remove("current");
+      });
+
+      scrollToCurrentItem();
+    }
+
+    function scrollToCurrentItem() {
+      const currentElement = roundList.querySelector(".round-item.current");
       if (currentElement) {
-        currentElement.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest"
-        });
+        currentElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     }
 
     function updateProgress() {
-      const percentage =
-        game.rounds === 0
-          ? 0
-          : Math.min(
-              (game.current / game.rounds) * 100,
-              100
-            );
-
-      progressBar.style.width =
-        `${percentage}%`;
-
-      progressText.textContent =
-        `${game.current} / ${game.rounds}회`;
-
-      currentStatus.textContent =
-        game.current === 0
-          ? "게임을 시작하세요"
-          : `${game.current}회차 진행 중`;
+      const percentage = game.rounds === 0 ? 0 : Math.min((game.current / game.rounds) * 100, 100);
+      progressBar.style.width = `${percentage}%`;
+      progressText.textContent = `${game.current} / ${game.rounds}회`;
+      currentStatus.textContent = game.current === 0 ? "게임을 시작하세요" : `${game.current}회차 진행 중`;
 
       updateHeader();
     }
 
     function move(step) {
-      const next =
-        game.current + step;
+      const prev = game.current;
+      const next = game.current + step;
 
       if (next < 0) {
         playFailureSound();
-
-        showToast(
-          "첫 번째 회차보다 아래로 내려갈 수 없습니다."
-        );
-
+        showToast("첫 번째 회차보다 아래로 내려갈 수 없습니다.");
         return;
       }
 
       if (next > game.rounds) {
         playSuccessSound();
-
-        showToast(
-          "모든 회차에 도달했습니다."
-        );
-
+        showToast("모든 회차에 도달했습니다.");
         return;
       }
 
-      if (step > 0) {
-        playSuccessSound();
-      } else {
-        playFailureSound();
-      }
+      if (step > 0) playSuccessSound();
+      else playFailureSound();
 
       game.current = next;
 
-      renderList();
+      updateListState(prev, next);
       updateProgress();
+      saveSessionToSupabase();
 
       if (game.current === game.rounds) {
-        showToast(
-          "축하합니다! 모든 회차에 도달했습니다."
-        );
+        showToast("축하합니다! 모든 회차에 도달했습니다.");
       }
     }
 
-    startButton.addEventListener(
-      "click",
-      buildGame
-    );
+    startButton.addEventListener("click", () => buildGame(true));
+    successButton.addEventListener("click", () => move(1));
+    failureButton.addEventListener("click", () => move(-1));
 
-    successButton.addEventListener(
-      "click",
-      () => {
+    window.addEventListener("keydown", (event) => {
+      if (document.activeElement.tagName === "INPUT") return;
+      if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+        event.preventDefault();
         move(1);
-      }
-    );
-
-    failureButton.addEventListener(
-      "click",
-      () => {
+      } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+        event.preventDefault();
         move(-1);
       }
-    );
-
-    [
-      investmentInput,
-      rateInput,
-      roundsInput
-    ].forEach((input) => {
-      input.addEventListener(
-        "keydown",
-        (event) => {
-          if (event.key === "Enter") {
-            buildGame();
-          }
-        }
-      );
     });
 
-    buildGame();
+    [investmentInput, rateInput, roundsInput].forEach((input) => {
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") buildGame(true);
+      });
+    });
+
+    // 앱 초기화 로직
+    async function initApp() {
+      const loaded = await loadSessionFromSupabase();
+      if (loaded) {
+        buildGame(false);
+        showToast("이전 게임 상태를 Supabase에서 불러왔습니다.");
+      } else {
+        buildGame(true);
+      }
+    }
+
+    initApp();
   </script>
 </body>
 </html>
