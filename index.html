@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="성공과 실패로 한 회차씩 쌓아가는 EXP 복리 투자 시뮬레이션 게임" />
   <title>EXP Stock Game</title>
@@ -775,10 +775,10 @@
       z-index: 3;
       display: grid;
       place-items: center;
-      writing-mode: vertical-rl;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
       color: rgba(255, 255, 255, 0.4);
       text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
       transition: color 0.3s;
@@ -950,38 +950,315 @@
     }
 
     /* ───────── Responsive ───────── */
-    @media (max-width: 1280px) {
+    @media (max-width: 1280px) and (min-width: 1081px) {
       .sliders { gap: 18px 22px; }
       .inspector { min-width: 250px; }
     }
 
+    /* 데스크톱에서는 숨기는 모바일 전용 요소 */
+    .settings-toggle,
+    .sheet-close,
+    .sheet-grab,
+    .sheet-backdrop { display: none; }
+
+    /* ───────── 태블릿·모바일: 한 화면 앱 셸 ─────────
+       위: 압축된 현황 / 가운데: 타일 보드(내부 스크롤) / 아래: 고정 도크
+       설정은 톱니 버튼으로 여는 바텀시트 */
     @media (max-width: 1080px) {
       .app {
-        grid-template-columns: 1fr;
-        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        height: 100vh;
+        height: 100dvh;
         min-height: 0;
+        padding: calc(10px + env(safe-area-inset-top)) 10px calc(90px + env(safe-area-inset-bottom));
       }
 
-      .stage { min-height: 860px; }
-      .side { grid-template-rows: auto auto; }
-      .board { min-height: 640px; }
-      .grid-wrap { max-height: 70vh; }
-    }
+      .stage {
+        flex: none;
+        padding: 12px 16px 16px;
+        border-radius: 26px;
+      }
 
-    @media (max-width: 760px) {
-      .app { padding: 10px; gap: 10px; }
-      .stage { padding: 22px 20px 18px; border-radius: 30px; min-height: 780px; }
-      .sliders { grid-template-columns: 1fr; }
-      .settings-head, .settings-foot, .board-head { flex-direction: column; align-items: stretch; }
-      .preview { text-align: left; }
-      .start { width: 100%; }
-      .inspector { min-width: 0; }
-      .round-grid { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 12px; }
-      .dock-main, .dock-alt { font-size: 16px; min-height: 56px; gap: 8px; }
-      .dock-icon { width: 56px; height: 56px; }
-      .keys { display: none; }
+      .stage::before {
+        background:
+          radial-gradient(
+            150% calc(55% + var(--p) * 70%) at 70% 115%,
+            #8fb3ff 0%,
+            #5a6bff 18%,
+            #3226f0 38%,
+            #1a0c9e 60%,
+            rgba(14, 6, 70, 0.5) 78%,
+            rgba(0, 0, 0, 0) 94%
+          );
+      }
+
+      .stage-top { margin-bottom: 12px; }
+      .brand { gap: 10px; }
+      .brand-tile { width: 32px; height: 32px; }
+      .brand-tile span { font-size: 9px; }
       .brand h1 { font-size: 15px; }
       #currentStatus { display: none; }
+      .sync { gap: 2px; }
+      .sync-dot { margin-right: 6px; }
+      .sync-btn { width: 40px; height: 40px; }
+      .sync-btn svg { width: 22px; height: 22px; }
+      .settings-toggle { display: grid; }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .metric {
+        min-width: 0;
+        margin: 0;
+        padding: 11px 13px 12px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .big { font-size: 28px; letter-spacing: -0.04em; }
+
+      .caption {
+        align-items: flex-start;
+        gap: 6px;
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #bdb9d2;
+        word-break: keep-all;
+      }
+
+      .caption .ico { width: 15px; height: 15px; margin-top: 1px; }
+      .caption .ico svg { width: 10px; height: 10px; }
+      .caption .ico-plain svg { width: 15px; height: 15px; }
+
+      .stage-spacer { display: none; }
+
+      .hero-num { display: flex; flex-direction: column; }
+
+      .lede {
+        order: -1;
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+        color: var(--lav);
+      }
+
+      .huge { font-size: clamp(44px, 13.5vw, 68px); }
+
+      .sentence {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.75;
+      }
+
+      .sentence b { margin: 0 1px; gap: 3px; font-size: 14px; }
+      .sentence b svg { width: 13px; height: 13px; }
+      .exact { display: none; }
+
+      .dock-wrap {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        z-index: 30;
+        margin: 0;
+      }
+
+      .dock {
+        gap: 4px;
+        padding: 6px;
+        background: rgba(0, 0, 0, 0.86);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        box-shadow: 0 -8px 40px -8px rgba(0, 0, 0, 0.9);
+      }
+
+      .dock-main, .dock-alt { min-height: 60px; gap: 8px; font-size: 17px; }
+      .dock-main svg, .dock-alt svg { width: 22px; height: 22px; }
+      .dock-icon { width: 60px; height: 60px; }
+      .dock-icon svg { width: 22px; height: 22px; }
+      .keys { display: none; }
+
+      /* 보드 */
+      .side { display: contents; }
+
+      .board {
+        flex: 1;
+        min-height: 0;
+        padding: 12px 4px 0 12px;
+        border-radius: 24px;
+      }
+
+      .board-head { gap: 10px; padding-right: 8px; }
+      .board-head h2 { font-size: 15px; white-space: nowrap; }
+      .board-head p { display: none; }
+
+      .inspector {
+        flex: 1;
+        min-width: 0;
+        max-width: 250px;
+        gap: 10px;
+        padding: 5px 12px 5px 5px;
+        border-radius: 15px;
+      }
+
+      .insp-tile { width: 36px; height: 36px; }
+      .insp-title { gap: 6px; font-size: 11px; }
+      .tag { padding: 1px 7px; font-size: 10px; }
+      .insp-amount { margin-top: 0; font-size: 14px; }
+      .insp-rate { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      .progress { gap: 10px; margin: 10px 8px 0 0; }
+      .progress span { font-size: 12px; }
+
+      .grid-wrap {
+        margin-top: 2px;
+        padding: 12px 8px 18px 2px;
+        overscroll-behavior: contain;
+      }
+
+      .round-grid {
+        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+        gap: 10px;
+      }
+
+      .tile .n { font-size: 14px; }
+      .tile:hover::after { opacity: 0.86; }
+      .tile.reached:hover::after { opacity: 0; }
+      .tile.current { box-shadow: 0 0 0 2px #000, 0 0 0 3.5px rgba(255, 255, 255, 0.9), 0 0 26px -2px var(--glow); }
+
+      /* 설정 바텀시트 */
+      .settings {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        max-height: 88dvh;
+        overflow-y: auto;
+        padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
+        border-radius: 28px 28px 0 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 0;
+        background: #0b0a12;
+        box-shadow: 0 -30px 60px rgba(0, 0, 0, 0.6);
+        transform: translateY(105%);
+        visibility: hidden;
+        transition: transform 0.38s var(--ease), visibility 0s linear 0.38s;
+      }
+
+      .settings.open {
+        transform: translateY(0);
+        visibility: visible;
+        transition: transform 0.38s var(--ease), visibility 0s;
+      }
+
+      .sheet-grab {
+        display: block;
+        width: 40px;
+        height: 5px;
+        margin: 0 auto 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .settings-head {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 12px;
+        margin-bottom: 18px;
+      }
+
+      .settings-head h2 { flex: 1; }
+
+      .preview {
+        order: 3;
+        width: 100%;
+        text-align: left;
+        font-size: 13px;
+      }
+
+      .sheet-close {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .sheet-close svg { width: 18px; height: 18px; }
+
+      .sliders { grid-template-columns: 1fr; gap: 20px; }
+      .field-top { margin-bottom: 8px; }
+      .field-top label { font-size: 15px; }
+      .val { font-size: 22px; }
+      .range { height: 36px; }
+      .range::-webkit-slider-thumb { width: 26px; height: 26px; margin-top: -10px; }
+      .range::-moz-range-thumb { width: 26px; height: 26px; }
+
+      .settings-foot {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .start { width: 100%; min-height: 56px; }
+
+      .sheet-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 55;
+        background: rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+
+      .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+    }
+
+    /* 태블릿: 시트와 도크를 가운데 정렬 */
+    @media (min-width: 700px) and (max-width: 1080px) {
+      .settings {
+        left: 50%;
+        right: auto;
+        width: min(760px, 100%);
+        transform: translate(-50%, 105%);
+      }
+
+      .settings.open { transform: translate(-50%, 0); }
+      .sliders { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .dock-wrap { left: 50%; right: auto; width: min(540px, calc(100% - 20px)); transform: translateX(-50%); }
+      .round-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 14px; }
+      .inspector { max-width: 320px; }
+      .big { font-size: 38px; }
+    }
+
+    /* 낮은 화면(가로 모드·소형 폰): 문장 요약을 줄여 타일 공간 확보 */
+    @media (max-width: 1080px) and (max-height: 700px) {
+      .sentence { display: none; }
+      .metrics { margin-bottom: 10px; }
+      .huge { font-size: 42px; }
+    }
+
+    @media (max-width: 370px) {
+      .big { font-size: 23px; }
+      .brand h1 { display: none; }
+      .dock-main, .dock-alt { font-size: 15px; gap: 6px; }
+      .round-grid { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1009,8 +1286,13 @@
           <button class="sync-btn" id="syncButton" type="button" aria-label="저장된 기록 다시 불러오기">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9"/><path d="M20 20v-4h-4"/></svg>
           </button>
+          <button class="sync-btn settings-toggle" id="settingsToggle" type="button" aria-label="게임 설정 열기" aria-controls="settingsPanel" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.3"/><circle cx="9" cy="17" r="2.3"/></svg>
+          </button>
         </div>
       </header>
+
+      <div class="metrics">
 
       <div class="metric coral">
         <p class="big" id="heroRate">+10<span class="unit">%</span></p>
@@ -1018,7 +1300,7 @@
           <span class="ico ico-circle" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
           </span>
-          회차마다 복리로 붙는 수익률
+          <span>회차 복리 수익률</span>
         </p>
       </div>
 
@@ -1030,6 +1312,8 @@
           </span>
           <span id="heroTotalRate">100회를 모두 성공하면 총 +1,278.93%</span>
         </p>
+      </div>
+
       </div>
 
       <div class="stage-spacer"></div>
@@ -1062,9 +1346,13 @@
 
     <!-- ───────── 사이드 ───────── -->
     <div class="side">
-      <section class="panel settings" aria-labelledby="settingsTitle">
+      <section class="panel settings" id="settingsPanel" aria-labelledby="settingsTitle">
+        <div class="sheet-grab" aria-hidden="true"></div>
         <div class="settings-head">
           <h2 id="settingsTitle">게임 설정</h2>
+          <button class="sheet-close" id="sheetClose" type="button" aria-label="설정 닫기">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
           <p class="preview" id="preview"></p>
         </div>
 
@@ -1133,6 +1421,7 @@
     </div>
   </main>
 
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -1510,9 +1799,18 @@
       el.inspRate.textContent = `누적 수익률 +${formatPercent(rateAt(r))}`;
     }
 
+    // 터치 기기에서는 탭한 타일을 잠시 보여준 뒤 현재 회차로 돌아온다
+    const coarsePointer = window.matchMedia("(hover: none)");
+    let inspectTimer = null;
+
     el.grid.addEventListener("click", (e) => {
       const tile = e.target.closest(".tile");
-      if (tile) inspect(Number(tile.dataset.round));
+      if (!tile) return;
+      inspect(Number(tile.dataset.round));
+      if (coarsePointer.matches) {
+        clearTimeout(inspectTimer);
+        inspectTimer = setTimeout(() => inspect(game.current), 3000);
+      }
     });
 
     el.grid.addEventListener("mouseover", (e) => {
@@ -1576,7 +1874,9 @@
       el.heroRate.innerHTML = `+${game.rate}<span class="unit">%</span>`;
       renderMoneyBig(el.heroReached, completedAmount);
       fitText(el.heroReached);
-      el.heroTotalRate.textContent = `${game.rounds.toLocaleString("ko-KR")}회를 모두 성공하면 총 +${formatPercent(rateAt(game.rounds))}`;
+      el.heroTotalRate.textContent = window.matchMedia("(max-width: 1080px)").matches
+        ? `${game.rounds.toLocaleString("ko-KR")}회 완주 시 +${formatPercent(rateAt(game.rounds))}`
+        : `${game.rounds.toLocaleString("ko-KR")}회를 모두 성공하면 총 +${formatPercent(rateAt(game.rounds))}`;
 
       animateCurrentAmount(amountAt(game.current), animate);
 
@@ -1584,7 +1884,12 @@
         ? `목표까지 <b>${ICON.stairs}${remain.toLocaleString("ko-KR")}회</b> 남았어요.`
         : `<b>${ICON.stairs}모든 회차</b>를 달성했어요!`;
 
-      el.heroSentence.innerHTML =
+      const compactLayout = window.matchMedia("(max-width: 1080px)").matches;
+      el.heroSentence.innerHTML = compactLayout
+        ? `<b>${ICON.check}${game.current.toLocaleString("ko-KR")}회</b> 성공, ` +
+          `<b>${ICON.spark}+${formatPercent(rateAt(game.current))}</b>, ` +
+          (remain > 0 ? `<b>${ICON.stairs}${remain.toLocaleString("ko-KR")}회</b> 남음` : `<b>${ICON.stairs}완주</b>`)
+        :
         `<b>${ICON.check}${game.current.toLocaleString("ko-KR")}회</b> 성공, ` +
         `누적 <b>${ICON.spark}+${formatPercent(rateAt(game.current))}</b> 수익, ` +
         tail;
@@ -1785,6 +2090,10 @@
       game.current = next;
       applyTileStates(Math.min(prev, next), Math.max(prev, next) + 1);
 
+      if (navigator.vibrate) {
+        try { navigator.vibrate(step > 0 ? 12 : [28, 40, 28]); } catch {}
+      }
+
       if (step > 0) {
         playSuccessSound(next / game.rounds);
         restartAnimation(tiles[next - 1], "bloom");
@@ -1847,11 +2156,81 @@
       }
       disarmStart();
       startNewGame(true);
+      closeSheet();
     });
+
+    /* ═════════════ 모바일 설정 시트 ═════════════ */
+    const sheetQuery = window.matchMedia("(max-width: 1080px)");
+    const settingsPanel = $("settingsPanel");
+    const settingsToggle = $("settingsToggle");
+    const sheetBackdrop = $("sheetBackdrop");
+
+    function sheetMode() { return sheetQuery.matches; }
+
+    function applySheetInert() {
+      const hidden = sheetMode() && !settingsPanel.classList.contains("open");
+      settingsPanel.inert = hidden;
+      if (hidden) settingsPanel.setAttribute("aria-hidden", "true");
+      else settingsPanel.removeAttribute("aria-hidden");
+    }
+
+    function openSheet() {
+      if (!sheetMode()) return;
+      settingsPanel.classList.add("open");
+      sheetBackdrop.classList.add("show");
+      settingsToggle.setAttribute("aria-expanded", "true");
+      applySheetInert();
+      setTimeout(() => $("sheetClose").focus({ preventScroll: true }), 60);
+    }
+
+    function closeSheet() {
+      if (!settingsPanel.classList.contains("open")) return;
+      settingsPanel.classList.remove("open");
+      sheetBackdrop.classList.remove("show");
+      settingsToggle.setAttribute("aria-expanded", "false");
+      disarmStart();
+      applySheetInert();
+    }
+
+    settingsToggle.addEventListener("click", openSheet);
+    $("sheetClose").addEventListener("click", closeSheet);
+    sheetBackdrop.addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+
+    // 시트 아래로 끌어내려 닫기
+    let dragStartY = null;
+    settingsPanel.addEventListener("touchstart", (e) => {
+      if (!sheetMode() || settingsPanel.scrollTop > 0 || e.target.closest("input")) return;
+      dragStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    settingsPanel.addEventListener("touchend", (e) => {
+      if (dragStartY === null) return;
+      const dy = e.changedTouches[0].clientY - dragStartY;
+      dragStartY = null;
+      if (dy > 70) closeSheet();
+    });
+
+    sheetQuery.addEventListener("change", () => {
+      if (!sheetMode()) {
+        settingsPanel.classList.remove("open");
+        sheetBackdrop.classList.remove("show");
+      }
+      applySheetInert();
+      updateStage(false);
+      requestAnimationFrame(() => {
+        fitText(el.heroCurrent);
+        fitText(el.heroReached);
+        scrollToRound(game.current || 1, false);
+      });
+    });
+
+    applySheetInert();
 
     document.addEventListener("keydown", (e) => {
       if (e.target.matches("input, textarea, [contenteditable]")) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.getElementById("settingsPanel").classList.contains("open")) return;
 
       if (e.key === "ArrowUp" || e.key === "ArrowRight") {
         e.preventDefault();
