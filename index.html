@@ -1362,7 +1362,7 @@
               <label for="investmentRange">투자금액</label>
               <input class="val" id="investment" inputmode="numeric" autocomplete="off" aria-label="투자금액 직접 입력" />
             </div>
-            <input class="range" id="investmentRange" type="range" min="0" max="10000" step="1" />
+            <input class="range" id="investmentRange" type="range" min="0" max="1000" step="1" />
             <div class="field-scale"><span>5천원</span><span>10억원</span></div>
           </div>
 
@@ -1628,8 +1628,8 @@
       investment: {
         range: $("investmentRange"),
         input: $("investment"),
-        toValue: (t) => clamp(niceMoney(5000 * Math.pow(100000000 / 5000, t / 1000)), ...LIMITS.investment),
-        toT: (v) => (1000 * Math.log(v / 5000)) / Math.log(100000000 / 5000),
+        toValue: (t) => clamp(niceMoney(5000 * Math.pow(1000000000 / 5000, t / 1000)), ...LIMITS.investment),
+        toT: (v) => (1000 * Math.log(v / 5000)) / Math.log(1000000000 / 5000),
         format: (v) => v.toLocaleString("ko-KR") + "원"
       },
       rate: {
