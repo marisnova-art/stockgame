@@ -4,6 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- ───────── PWA ───────── -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="application-name" content="EXP" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="EXP" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
   <meta name="description" content="성공과 실패로 한 회차씩 쌓아가는 EXP 복리 투자 시뮬레이션 대시보드" />
   <title>EXP Stock Game</title>
 
@@ -1017,6 +1029,173 @@
 
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+    /* ───────── PWA: 설치 버튼 ───────── */
+    #installBtn { position: relative; }
+    #installBtn[hidden] { display: none; }
+    .install-dot {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: conic-gradient(from 200deg, #ff2d2d, #ffd21a, #3ee07a, #1ec8ff, #3a5bff, #ff2d2d);
+      box-shadow: 0 0 0 2px var(--card), 0 0 10px rgba(255, 190, 60, 0.7);
+      animation: dotPulse 2.4s var(--ease) infinite;
+    }
+    #installBtn.seen .install-dot { display: none; }
+    @keyframes dotPulse { 50% { transform: scale(0.7); opacity: 0.6; } }
+
+    .stamp[data-state="offline"] small i { background: var(--muted); box-shadow: none; }
+
+    /* ───────── PWA: 설치 안내 시트 ───────── */
+    .sheet {
+      width: min(460px, calc(100% - 28px));
+      max-height: calc(100dvh - 40px);
+      padding: 0;
+      border: 1px solid var(--line-2);
+      border-radius: 32px;
+      color: var(--text);
+      background: var(--card);
+      box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.95);
+      overflow: auto;
+    }
+    .sheet::backdrop { background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .sheet[open] { animation: sheetIn 0.38s var(--ease); }
+    @keyframes sheetIn { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
+
+    .sheet-inner { padding: 28px 28px 24px; }
+    .sheet-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+    .sheet-head img { width: 60px; height: 60px; border-radius: 16px; flex: none; }
+    .sheet-head h2 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+    .sheet-head p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+    .sheet-close {
+      margin-left: auto;
+      align-self: flex-start;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      color: var(--soft);
+    }
+    .sheet-close:hover { color: #fff; border-color: var(--line-2); }
+    .sheet-close svg { width: 18px; height: 18px; }
+
+    .sheet-bar { height: 3px; border-radius: 3px; background: var(--spectrum); margin: 0 0 22px; opacity: 0.85; }
+
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: st; }
+    .steps li {
+      counter-increment: st;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--card-2);
+      border: 1px solid var(--line);
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--soft);
+    }
+    .steps li::before {
+      content: counter(st);
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 600;
+      color: #050505;
+      background: #fff;
+    }
+    .steps b { color: #fff; font-weight: 500; }
+    .steps .ico {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      margin: 0 2px;
+      vertical-align: -7px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .steps .ico svg { width: 16px; height: 16px; }
+
+    .sheet-note { margin: 16px 2px 0; font-size: 13px; line-height: 1.55; color: var(--muted); }
+    .sheet-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .sheet-btn {
+      flex: 1;
+      min-height: 52px;
+      border-radius: 999px;
+      border: 1px solid var(--line-2);
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      transition: background 0.2s, transform 0.18s var(--ease);
+    }
+    .sheet-btn:hover { background: rgba(255, 255, 255, 0.06); }
+    .sheet-btn:active { transform: scale(0.97); }
+    .sheet-btn.primary { color: #050505; background: #fff; border-color: #fff; }
+    .sheet-btn.primary:hover { background: #e9e9ee; }
+    .sheet-btn[hidden] { display: none; }
+
+    /* ───────── PWA: 업데이트 / 오프라인 배너 ───────── */
+    .pwa-banner {
+      position: fixed;
+      top: calc(16px + env(safe-area-inset-top));
+      left: 50%;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      max-width: calc(100% - 24px);
+      padding: 10px 10px 10px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      color: #fff;
+      background: rgba(18, 18, 24, 0.92);
+      border: 1px solid var(--line-2);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.85);
+      transform: translate(-50%, -140%);
+      opacity: 0;
+      transition: transform 0.4s var(--ease), opacity 0.3s;
+    }
+    .pwa-banner.show { transform: translate(-50%, 0); opacity: 1; }
+    .pwa-banner i {
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: conic-gradient(from 200deg, #ff2d2d, #ffd21a, #3ee07a, #1ec8ff, #3a5bff, #ff2d2d);
+    }
+    .pwa-banner span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pwa-banner button {
+      flex: none;
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #050505;
+      background: #fff;
+    }
+    .pwa-banner button.ghost { color: var(--soft); background: transparent; padding: 0 10px; }
+    .pwa-banner.offline { padding-right: 20px; }
+    .pwa-banner.offline i { background: var(--muted); }
+
+    /* 설치된 앱(standalone)에서는 브라우저 UI가 없으므로 상단 여백 보정 */
+    @media (display-mode: standalone) {
+      .app { padding-top: calc(28px + env(safe-area-inset-top)); }
+      body { overscroll-behavior-y: none; }
+    }
+
     /* ───────── Responsive ───────── */
     @media (max-width: 1080px) {
       .app {
@@ -1030,6 +1209,9 @@
       .tab { min-width: 0; flex: 1 1 0; overflow: hidden; text-overflow: ellipsis; }
       .hero-row { gap: 8px; }
       .circle-btn { width: 50px; height: 50px; }
+      .install-dot { top: 10px; right: 10px; }
+      .sheet { border-radius: 28px; }
+      .sheet-inner { padding: 24px 20px 20px; }
       .title { font-size: clamp(34px, 9vw, 46px); }
       .tab { min-height: 48px; padding: 0 14px; font-size: 14px; }
       .hero { padding: 24px 22px 0; border-radius: 30px; }
@@ -1099,6 +1281,10 @@
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="1.6"/><circle cx="16" cy="8" r="1.6"/><circle cx="8" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></svg>
         </button>
         <div class="top-right">
+          <button class="circle-btn" id="installBtn" type="button" aria-label="앱으로 설치" title="앱으로 설치" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            <span class="install-dot" aria-hidden="true"></span>
+          </button>
           <button class="circle-btn" id="refreshBtn" type="button" data-state="loading" aria-label="저장된 기록 다시 불러오기">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9"/><path d="M20 20v-4h-4"/></svg>
           </button>
@@ -1272,6 +1458,39 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <!-- ───────── PWA: 업데이트 / 오프라인 배너 ───────── -->
+  <div class="pwa-banner" id="updateBanner" role="status" aria-live="polite">
+    <i aria-hidden="true"></i><span>새 버전이 준비됐어요</span>
+    <button type="button" class="ghost" id="updateLater">나중에</button>
+    <button type="button" id="updateNow">업데이트</button>
+  </div>
+  <div class="pwa-banner offline" id="offlineBanner" role="status" aria-live="polite">
+    <i aria-hidden="true"></i><span>오프라인 · 기록은 이 기기에 보관돼요</span>
+  </div>
+
+  <!-- ───────── PWA: 설치 안내 ───────── -->
+  <dialog class="sheet" id="installSheet" aria-labelledby="installTitle">
+    <div class="sheet-inner">
+      <div class="sheet-head">
+        <img src="icons/icon-192.png" alt="" width="60" height="60" />
+        <div>
+          <h2 id="installTitle">앱으로 설치하기</h2>
+          <p id="installSub">홈 화면에서 바로 열 수 있어요</p>
+        </div>
+        <button class="sheet-close" id="installClose" type="button" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="sheet-bar" aria-hidden="true"></div>
+      <ol class="steps" id="installSteps"></ol>
+      <p class="sheet-note" id="installNote"></p>
+      <div class="sheet-actions">
+        <button class="sheet-btn" id="installCopy" type="button" hidden>주소 복사</button>
+        <button class="sheet-btn primary" id="installGo" type="button">확인</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     /* ═════════════ Supabase ═════════════ */
     const SUPABASE_URL = "https://rflccnybpimhgguwinpz.supabase.co";
@@ -1280,6 +1499,7 @@
     const LOCAL_KEY = "exp-stock-game:backup";
     const SOUND_KEY = "exp-stock-game:sound";
     const LOG_KEY = "exp-stock-game:log";
+    const PENDING_KEY = "exp-stock-game:pending";
     const HISTORY_KEY = "exp-stock-game:history";
 
     let supabaseClient = null;
@@ -1600,14 +1820,14 @@
     });
 
     /* ═════════════ 저장 상태 표시 ═════════════ */
-    const SYNC_TEXT = { loading: "불러오는 중", saving: "저장 중", ok: "저장됨", error: "이 기기에만 저장됨" };
+    const SYNC_TEXT = { loading: "불러오는 중", saving: "저장 중", ok: "저장됨", error: "이 기기에만 저장됨", offline: "오프라인 · 기기 저장" };
 
     function setSync(state) {
       syncState = state;
       el.stamp.dataset.state = state;
       el.refresh.dataset.state = state;
       el.stampState.textContent = SYNC_TEXT[state] || "";
-      if (state === "ok" || state === "error") lastSaved = lastSaved || Date.now();
+      if (state === "ok" || state === "error" || state === "offline") lastSaved = lastSaved || Date.now();
       el.stampTime.textContent = relTime(lastSaved);
     }
 
@@ -2085,8 +2305,19 @@
     let saving = false;
     let saveQueued = false;
 
+    // 서버에 아직 반영되지 않은 로컬 변경이 있는지 (재연결 시 자동 동기화)
+    let pendingSync = readPref(PENDING_KEY) === "1";
+    function setPending(v) { pendingSync = v; writePref(PENDING_KEY, v ? "1" : "0"); }
+
     async function saveProgressToSupabase() {
       writeLocal();
+
+      if (!navigator.onLine) {
+        setPending(true);
+        lastSaved = Date.now();
+        setSync("offline");
+        return;
+      }
 
       if (!supabaseClient) {
         lastSaved = Date.now();
@@ -2120,11 +2351,13 @@
           }
         }
         lastSaved = Date.now();
+        setPending(false);
         setSync("ok");
       } catch (err) {
         console.error("Data save error:", err);
+        setPending(true);
         lastSaved = Date.now();
-        setSync("error");
+        setSync(navigator.onLine ? "error" : "offline");
       } finally {
         saving = false;
         if (saveQueued) {
@@ -2158,9 +2391,24 @@
     }
 
     async function loadGameFromSupabase(manual = false) {
+      // 서버에 못 올린 로컬 기록이 있으면 그것부터 올린 뒤 불러옴(최신 진행 보호)
+      if (pendingSync && navigator.onLine && supabaseClient) {
+        const local = readLocal();
+        if (local) {
+          lastSaved = local.savedAt || null;
+          applyGame(local);
+          await saveProgressToSupabase();
+          showToast(pendingSync
+            ? "서버에 연결하지 못해 이 기기에 보관된 기록을 이어서 보여드려요."
+            : "이 기기에 보관된 기록을 서버에 동기화했어요.");
+          return;
+        }
+      }
+
       setSync("loading");
 
       try {
+        if (!navigator.onLine) throw new Error("offline");
         if (!supabaseClient) throw new Error("Supabase client unavailable");
 
         const { data, error } = await supabaseClient
@@ -2182,16 +2430,17 @@
           startNewGame(false);
         }
       } catch (err) {
-        console.error("Data load error:", err);
+        const offline = !navigator.onLine;
+        if (!offline) console.error("Data load error:", err);
         const local = readLocal();
         if (local) {
           lastSaved = local.savedAt || null;
           applyGame(local);
-          showToast("서버에 연결하지 못해 이 기기에 보관된 기록을 불러왔어요.");
+          showToast(offline ? "오프라인이라 이 기기에 보관된 기록을 불러왔어요." : "서버에 연결하지 못해 이 기기에 보관된 기록을 불러왔어요.");
         } else {
           startNewGame(false);
         }
-        setSync("error");
+        setSync(offline ? "offline" : "error");
       }
     }
 
@@ -2326,6 +2575,280 @@
       if (el.logCard.dataset.open === "true") renderLog();
     }, 30000);
 
+
+    /* ═════════════ PWA: 설치 · 업데이트 · 오프라인 ═════════════ */
+    const pwa = (() => {
+      const INSTALL_SEEN_KEY = "exp-stock-game:install-seen";
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      const isAndroid = /Android/i.test(ua);
+      const isMac = /Macintosh/.test(ua) && !isIOS;
+      const inApp = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|Whale\/.*inapp/i.test(ua);
+      const isKakao = /KAKAOTALK/i.test(ua);
+      const isSamsung = /SamsungBrowser/i.test(ua);
+      const isFirefox = /Firefox|FxiOS/i.test(ua);
+      const isEdge = /Edg(e|A|iOS)?\//i.test(ua);
+      const isWhale = /Whale\//i.test(ua);
+      const isIOSOther = isIOS && /CriOS|FxiOS|EdgiOS|Whale/i.test(ua);
+      const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|Whale|SamsungBrowser|FxiOS/i.test(ua);
+
+      const ICON = {
+        share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>',
+        plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+        dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
+        menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+        install: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M12 8v6M9 11l3 3 3-3"/><path d="M8 21h8"/></svg>',
+        dock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M7 20h10"/></svg>',
+        compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>'
+      };
+      const ico = (k) => `<span class="ico">${ICON[k]}</span>`;
+
+      const btn = $("installBtn");
+      const sheet = $("installSheet");
+      const steps = $("installSteps");
+      const note = $("installNote");
+      const sub = $("installSub");
+      const go = $("installGo");
+      const copy = $("installCopy");
+      const updateBanner = $("updateBanner");
+      const offlineBanner = $("offlineBanner");
+
+      let deferredPrompt = null;
+      let waitingWorker = null;
+      let updateRequested = false;
+
+      const isStandalone = () =>
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+        window.navigator.standalone === true;
+
+      function refreshButton() {
+        // 이미 앱으로 실행 중이면 설치 버튼 숨김
+        btn.hidden = isStandalone();
+        btn.classList.toggle("seen", readPref(INSTALL_SEEN_KEY) === "1");
+      }
+
+      function guide() {
+        if (inApp) {
+          return {
+            sub: "지금은 앱 안의 브라우저로 열려 있어요",
+            steps: isIOS
+              ? [`오른쪽 아래 ${ico("dots")} 또는 공유 메뉴를 누르세요`, `<b>Safari로 열기</b>를 선택하세요`, `Safari에서 다시 ${ico("share")} → <b>홈 화면에 추가</b>`]
+              : [`오른쪽 위 ${ico("dots")} 메뉴를 누르세요`, `<b>다른 브라우저로 열기</b>를 선택하세요`, `Chrome에서 다시 설치 버튼을 누르면 끝`],
+            note: "카카오톡·네이버·인스타그램 등 앱 안 브라우저에서는 설치가 지원되지 않아요.",
+            action: isAndroid ? "chrome" : "copy"
+          };
+        }
+        if (isIOS) {
+          if (isIOSOther) {
+            return {
+              sub: "iPhone · iPad",
+              steps: [`주소창 옆 ${ico("share")} 공유 버튼을 누르세요`, `목록을 내려 <b>홈 화면에 추가</b> ${ico("plus")} 를 선택하세요`, `오른쪽 위 <b>추가</b>를 누르면 끝`],
+              note: "공유 메뉴에 ‘홈 화면에 추가’가 없다면 Safari에서 열어 같은 방법으로 설치해 주세요.",
+              action: "copy"
+            };
+          }
+          return {
+            sub: "iPhone · iPad · Safari",
+            steps: [`아래(또는 위) 툴바의 ${ico("share")} 공유 버튼을 누르세요`, `목록을 내려 <b>홈 화면에 추가</b> ${ico("plus")} 를 선택하세요`, `오른쪽 위 <b>추가</b>를 누르면 끝`],
+            note: "설치하면 주소창 없이 전체 화면으로 열리고, 오프라인에서도 마지막 기록을 볼 수 있어요."
+          };
+        }
+        if (isAndroid) {
+          if (isSamsung) return { sub: "Android · 삼성 인터넷", steps: [`아래 ${ico("menu")} 메뉴를 누르세요`, `<b>현재 페이지 추가</b> → <b>홈 화면</b>을 선택하세요`, `<b>추가</b>를 누르면 끝`] };
+          if (isFirefox) return { sub: "Android · Firefox", steps: [`오른쪽 ${ico("dots")} 메뉴를 누르세요`, `<b>설치</b> 또는 <b>홈 화면에 추가</b>를 선택하세요`, `<b>추가</b>를 누르면 끝`] };
+          return { sub: "Android · Chrome", steps: [`오른쪽 위 ${ico("dots")} 메뉴를 누르세요`, `<b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 선택하세요`, `<b>설치</b>를 누르면 끝`] };
+        }
+        if (isMac && isSafari) {
+          return {
+            sub: "Mac · Safari",
+            steps: [`메뉴 막대의 <b>파일</b>을 여세요 (또는 ${ico("share")} 공유 버튼)`, `<b>Dock에 추가…</b> ${ico("dock")} 를 선택하세요`, `<b>추가</b>를 누르면 끝`],
+            note: "macOS Sonoma 이상에서 지원돼요."
+          };
+        }
+        if (isFirefox) {
+          return {
+            sub: "PC · Firefox",
+            steps: [`Firefox는 데스크톱 앱 설치를 지원하지 않아요`, `<b>Chrome · Edge · Whale</b>에서 이 주소를 열어 주세요`, `주소창 오른쪽 ${ico("install")} 아이콘을 누르면 끝`],
+            action: "copy"
+          };
+        }
+        const name = isEdge ? "Edge" : isWhale ? "Whale" : "Chrome";
+        return {
+          sub: `PC · ${name}`,
+          steps: isEdge
+            ? [`주소창 오른쪽 ${ico("install")} 아이콘을 누르세요`, `안 보이면 ${ico("dots")} → <b>앱</b> → <b>이 사이트를 앱으로 설치</b>`, `<b>설치</b>를 누르면 끝`]
+            : [`주소창 오른쪽 ${ico("install")} 아이콘을 누르세요`, `안 보이면 ${ico("dots")} → <b>전송, 저장, 공유</b> → <b>페이지를 앱으로 설치</b>`, `<b>설치</b>를 누르면 끝`],
+          note: "설치하면 시작 메뉴·Dock에서 별도 창으로 바로 열려요."
+        };
+      }
+
+      function openGuide() {
+        const g = guide();
+        sub.textContent = g.sub || "";
+        steps.innerHTML = g.steps.map((t) => `<li><span>${t}</span></li>`).join("");
+        note.textContent = g.note || "";
+        note.hidden = !g.note;
+        copy.hidden = g.action !== "copy" && g.action !== "chrome";
+        go.textContent = g.action === "chrome" ? "Chrome으로 열기" : "확인";
+        go.dataset.action = g.action === "chrome" ? "chrome" : "close";
+        if (typeof sheet.showModal === "function") sheet.showModal();
+        else sheet.setAttribute("open", "");
+      }
+
+      function closeGuide() {
+        if (typeof sheet.close === "function") sheet.close();
+        else sheet.removeAttribute("open");
+      }
+
+      async function onInstallClick() {
+        writePref(INSTALL_SEEN_KEY, "1");
+        refreshButton();
+        // Android / PC Chrome·Edge·Whale: 브라우저 기본 설치 창 바로 띄우기
+        if (deferredPrompt) {
+          const p = deferredPrompt;
+          deferredPrompt = null;
+          try {
+            p.prompt();
+            const { outcome } = await p.userChoice;
+            if (outcome === "accepted") showToast("설치를 시작했어요. 홈 화면에서 EXP를 찾아보세요.");
+          } catch { openGuide(); }
+          return;
+        }
+        openGuide();
+      }
+
+      btn.addEventListener("click", onInstallClick);
+      $("installClose").addEventListener("click", closeGuide);
+      sheet.addEventListener("click", (e) => { if (e.target === sheet) closeGuide(); });
+      go.addEventListener("click", () => {
+        if (go.dataset.action === "chrome") {
+          const url = location.href.replace(/^https?:\/\//, "");
+          location.href = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end`;
+          return;
+        }
+        closeGuide();
+      });
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(location.origin + location.pathname);
+          copy.textContent = "복사됐어요";
+        } catch {
+          copy.textContent = "복사 실패";
+        }
+        setTimeout(() => { copy.textContent = "주소 복사"; }, 1800);
+      });
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        refreshButton();
+      });
+
+      window.addEventListener("appinstalled", () => {
+        deferredPrompt = null;
+        writePref(INSTALL_SEEN_KEY, "1");
+        closeGuide();
+        refreshButton();
+        showToast("EXP 앱이 설치됐어요.");
+      });
+
+      window.matchMedia("(display-mode: standalone)").addEventListener?.("change", refreshButton);
+
+      /* ── 서비스워커 & 업데이트 ── */
+      function showUpdate(worker) {
+        waitingWorker = worker;
+        updateBanner.classList.add("show");
+      }
+
+      $("updateNow").addEventListener("click", () => {
+        updateBanner.classList.remove("show");
+        if (!waitingWorker) { location.reload(); return; }
+        updateRequested = true;
+        waitingWorker.postMessage("SKIP_WAITING");
+      });
+      $("updateLater").addEventListener("click", () => updateBanner.classList.remove("show"));
+
+      function registerSW() {
+        if (!("serviceWorker" in navigator)) return;
+        if (location.protocol === "file:") return;
+
+        navigator.serviceWorker.register("./sw.js", { scope: "./" }).then((reg) => {
+          if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg.waiting);
+
+          reg.addEventListener("updatefound", () => {
+            const nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener("statechange", () => {
+              // 기존 SW가 있을 때만 '새 버전' 안내 (첫 설치는 조용히)
+              if (nw.state === "installed" && navigator.serviceWorker.controller) showUpdate(nw);
+            });
+          });
+
+          // 앱을 다시 볼 때마다 새 버전 확인
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") reg.update().catch(() => {});
+          });
+          setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+        }).catch((err) => console.warn("SW registration failed:", err));
+
+        // 사용자가 '업데이트'를 눌렀을 때만 새로고침 (첫 설치 때 깜빡임 방지)
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!updateRequested) return;
+          updateRequested = false;
+          location.reload();
+        });
+      }
+
+      /* ── 온라인 / 오프라인 ── */
+      let offlineTimer = null;
+      function onConnectivity(announce) {
+        const online = navigator.onLine;
+        clearTimeout(offlineTimer);
+        if (!online) {
+          offlineBanner.classList.add("show");
+          offlineTimer = setTimeout(() => offlineBanner.classList.remove("show"), 4200);
+          if (syncState !== "saving" && syncState !== "loading") setSync("offline");
+          return;
+        }
+        offlineBanner.classList.remove("show");
+        if (!announce) return;
+        if (pendingSync) {
+          saveProgressToSupabase().then(() => {
+            if (!pendingSync) showToast("다시 연결됐어요. 이 기기의 기록을 서버에 동기화했어요.");
+          });
+        } else if (syncState === "offline" || syncState === "error") {
+          loadGameFromSupabase(true);
+        }
+      }
+      window.addEventListener("online", () => onConnectivity(true));
+      window.addEventListener("offline", () => onConnectivity(true));
+
+      /* ── 바로가기(shortcut) 실행 처리 ── */
+      function handleLaunch() {
+        const params = new URLSearchParams(location.search);
+        const action = params.get("action");
+        if (params.has("action") || params.has("source")) {
+          window.history.replaceState(null, "", location.pathname + location.hash);
+        }
+        if (action === "settings") {
+          setTimeout(() => {
+            setOpen(el.setCard, true);
+            el.setCard.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 400);
+        }
+      }
+
+      return {
+        init() {
+          refreshButton();
+          registerSW();
+          handleLaunch();
+          if (!navigator.onLine) onConnectivity(false);
+        }
+      };
+    })();
+
     /* ═════════════ 시작 ═════════════ */
     applySoundButton();
     loadLog();
@@ -2341,6 +2864,7 @@
       document.fonts.ready.then(() => { fitText(el.score); renderChart(); });
     }
 
+    pwa.init();
     loadGameFromSupabase();
   </script>
 </body>
